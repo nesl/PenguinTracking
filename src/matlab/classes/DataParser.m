@@ -4,65 +4,67 @@ classdef DataParser < handle
     
     
     properties
+        MSGTYPE_INERTIAL = 0;
+        MSGTYPE_GPS = 1;
         data_inertial = {};
-        data_gps = {};        
+        data_gps = {}; 
+        messages = [];
+        % most recent measurements
+        idx_inertial = 1;
+        idx_gps = 1;
     end
     
     methods
         % Constructor
         function obj = DataParser( fp_inertial, fp_gps )
+            % read inertial file
+            obj.data_inertial = csvread(fp_inertial);
             
-            % ===== read inertial data =====
-            fid = fopen(fp_inertial);
-            rawdata = textscan(fid, '%f %f %f %f %f %f %f %f %s %s %f', 'headerlines', 1);
-            fclose(fid);
-            % preallocate memory for inertial data
-            obj.data_inertial = zeros(length(rawdata{1}), 9);
-            % convert time to posix and append to data
-            for i=1:length(rawdata{1})
-                date = rawdata{9}{i};
-                time = rawdata{10}{i};
-                string = [date ' ' time];
-                % days since 1-Jan-0000.
-                dn = datenum(string, 'dd/mm/yyyy hh:MM:SS');
-                % seconds since 1-Jan-0000.
-                ds = dn*86400;
-                obj.data_inertial(i,1) = ds;
-                disp(100*i/length(rawdata{1}));
+            % read GPS file
+            obj.data_gps = csvread(fp_gps);
+        end
+        
+        % get the next measurement, ordered in time
+        function m = getNextMeasurement(obj)
+            % is the next measurement inertial or GPS?
+            if obj.idx_inertial+1 < size(obj.data_inertial,1)
+                tni = obj.data_inertial( obj.idx_inertial+1, 1 );
             end
-            % append accel
-            obj.data_inertial(:,2:4) = [rawdata{1} rawdata{2} rawdata{3}];
-            % append mag
-            obj.data_inertial(:,5:7) = [rawdata{4} rawdata{5} rawdata{6}];
-            % append temp
-            obj.data_inertial(:,8) = rawdata{7};
-            % append baro
-            obj.data_inertial(:,9) = rawdata{8};
-            
-            % ===== read GPS data =====
-            fid = fopen(fp_gps);
-            rawdata = textscan(fid, '%s %s %f %f %f', 'headerlines', 1, 'delimiter', ',');
-            fclose(fid);
-            % preallocate memory for inertial data
-            obj.data_gps = zeros(length(rawdata{1}), 4);
-            % convert time to posix and append to data
-            for i=1:length(rawdata{1})
-                date = rawdata{1}{i};
-                time = rawdata{2}{i};
-                string = [date ' ' time];
-                % days since 1-Jan-0000.
-                dn = datenum(string, 'yyyy/mm/dd hh:MM:SS');
-                % seconds since 1-Jan-0000.
-                ds = dn*86400;
-                obj.data_gps(i,1) = ds;
+            if obj.idx_gps+1 < size(obj.data_gps,1)
+                tng = obj.data_gps( obj.idx_gps+1, 1 );
             end
-            % append latitude
-            obj.data_gps(:,2) = rawdata{3};
-            % append longitude
-            obj.data_gps(:,3) = rawdata{4};
-            % append altitude
-            obj.data_gps(:,4) = rawdata{5};
             
+            if tni < tng
+                % make inertial measurement
+                obj.idx_inertial = obj.idx_inertial + 1;
+                data = obj.data_inertial(obj.idx_inertial,:);
+                m = Measurement( obj.MSGTYPE_INERTIAL, data(1) );
+                m.setInertialData(data(2:4)', data(5:7)', data(8), data(9))
+                return;
+            else
+                % make GPS measurement
+                obj.idx_gps = obj.idx_gps + 1;
+                data = obj.data_gps(obj.idx_gps,:);
+                m = Measurement( obj.MSGTYPE_GPS, data(1) );
+                m.setGPSData(data(2), data(3), data(4))
+                return;
+            end
+            % otherwise we're out of data, return empty
+            m = [];
+        end
+        
+        % advance measurements to spot of first GPS data
+        function advanceToFirstFix(obj)
+            % first fix time
+            tff = obj.data_gps(1,1);
+            % advance inertial data
+            ti = obj.data_inertial(obj.idx_inertial,1);
+            while ti < tff
+                obj.idx_inertial = obj.idx_inertial + 1;
+                ti = obj.data_inertial(obj.idx_inertial,1);
+            end
+            % subtract one index so GPS is the first measurement
+            obj.idx_inertial = obj.idx_inertial - 1;
         end
         
     end

@@ -28,6 +28,7 @@ classdef Measurement < handle
         cov_temp = 0.5; % deg. C
         cov_latitude = 0;
         cov_longitude = 0;
+        cov_altitude = 0;
     end
     
     methods
@@ -48,9 +49,10 @@ classdef Measurement < handle
         end
         
         % set GPS data
-        function setGPSData(obj, latitude, longitude)
+        function setGPSData(obj, latitude, longitude, altitude)
             obj.latitude = latitude;
             obj.longitude = longitude;
+            obj.altitude = altitude;
         end
 
         % get the vectorized measurements
@@ -60,7 +62,7 @@ classdef Measurement < handle
                 z = [obj.acc_xyz; obj.mag_xyz; obj.baro; obj.temp];
             end
             if obj.type == obj.MSGTYPE_GPS
-                z = [obj.latitude; obj.longitude];
+                z = [obj.latitude; obj.longitude; obj.altitude];
             end
         end
         
@@ -71,7 +73,7 @@ classdef Measurement < handle
                 r = [obj.cov_acc; obj.cov_mag; obj.cov_baro; obj.cov_temp];
             end
             if obj.type == obj.MSGTYPE_GPS
-                r = [obj.cov_latitude; obj.cov_longitude];
+                r = [obj.cov_latitude; obj.cov_longitude; obj.cov_altitude];
             end
             R = diag(r);
         end
