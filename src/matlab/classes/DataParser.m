@@ -19,7 +19,7 @@ classdef DataParser < handle
             % preallocate memory for inertial data
             obj.data_inertial = zeros(length(rawdata{1}), 9);
             % convert time to posix and append to data
-            for i=1:length(rawdata(1))
+            for i=1:length(rawdata{1})
                 date = rawdata{9}{i};
                 time = rawdata{10}{i};
                 string = [date ' ' time];
@@ -45,7 +45,7 @@ classdef DataParser < handle
             % preallocate memory for inertial data
             obj.data_gps = zeros(length(rawdata{1}), 4);
             % convert time to posix and append to data
-            for i=1:length(rawdata(1))
+            for i=1:length(rawdata{1})
                 date = rawdata{1}{i};
                 time = rawdata{2}{i};
                 string = [date ' ' time];
