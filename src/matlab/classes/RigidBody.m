@@ -14,10 +14,10 @@ classdef RigidBody < handle
         % identifier
         name;
         % covariance
-        cov_xyz = [0.5; 0.5; 0.5]; % m
-        cov_dxyz = [0.5; 0.5; 0.5]; % m/s
-        cov_ddxyz = [0.5; 0.5; 0.5]; %m/s^2
-        cov_theta = [0.5; 0.5; 0.5]; % rad/s
+        cov_xyz = [0.1; 0.1; 0.1];   % m
+        cov_dxyz = [0.1; 0.1; 0.1];  % m/s
+        cov_ddxyz = [0.1; 0.1; 0.1]; % m/s^2
+        cov_theta = [0.1; 0.1; 0.1]; % rad/s
     end
     
     methods

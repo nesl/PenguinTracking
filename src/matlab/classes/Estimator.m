@@ -143,7 +143,7 @@ classdef Estimator < handle
                 state_mag = s(4:6);
                 y = [
                     % acc_xyz
-                    R*(state_acc./obj.GRAVITY);
+                    R*(state_acc);
                     % mag_xyz
                     Rx*[1;1;1];
                     % temp
