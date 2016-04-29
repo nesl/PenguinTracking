@@ -42,7 +42,7 @@ classdef Estimator < handle
         % =============================================
         function obj = Estimator(datafolder, rbody)
             % create dataparser
-            obj.dataparser = DataParserPenguin(datafolder);
+            obj.dataparser = DataParser(datafolder);
             obj.rbody = rbody;            
             
             % pre-allocate measurement memory

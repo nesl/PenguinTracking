@@ -3,12 +3,15 @@ clc; close all; clear all;
 addpath('classes');
 addpath('utilities');
 
-%% Raw Data Log Folder
-logfolder = '~/Dropbox/Data/Data_SLATS/ros_mocap/good/ped04/';
-%logfolder = '~/Desktop/logs/test/';
+%% Raw Data Log Files
+fp_inertial = '~/Downloads/Dinodave swim_selection_1.txt';
+fp_gps = '~/Downloads/Julian1_20151212-143221.csv';
 
-%% Node/Network configuration
-configfile = 'config/nodepositions_nesl_mobile';
+%% Create dataparser
+dp = DataParser( fp_inertial, fp_gps );
+size(dp.raw_inertial)
+return;
+
 
 %% Create Network Manager
 % NetworkManager(nodeconfig, datafolder, <owr_corrections>, <twr_corrections>) 
