@@ -40,9 +40,9 @@ classdef Estimator < handle
         % =============================================
         %                  CONSTRUCTOR
         % =============================================
-        function obj = Estimator(datafolder, rbody)
+        function obj = Estimator(dataparser, rbody)
             % create dataparser
-            obj.dataparser = DataParser(datafolder);
+            obj.dataparser = dataparser;
             obj.rbody = rbody;            
             
             % pre-allocate measurement memory
