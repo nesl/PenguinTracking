@@ -4,8 +4,8 @@ import datetime
 
 
 # -- file paths --
-fin = open('/Users/paul/Downloads/Dinodave swim_selection_1.txt')
-fout = open('/Users/paul/Workspace/PenguinTracking/data/inertial_01.csv', 'w')
+fin = open('/home/paul/Downloads/Dinodave swim_selection_1.txt')
+fout = open('/home/paul/Workspace/PenguinTracking/data/inertial_01.csv', 'w')
 
 content = fin.readlines()[1:]
 for line in content:

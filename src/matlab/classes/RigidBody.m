@@ -9,15 +9,15 @@ classdef RigidBody < handle
         % state
         xyz;
         dxyz;
+        ddxyz;
         theta;
-        dtheta;
         % identifier
         name;
         % covariance
-        cov_xyz = [1; 1; 1]; % m/s
-        cov_dxyz = [1; 1; 1]; % m/s^2
+        cov_xyz = [0.5; 0.5; 0.5]; % m
+        cov_dxyz = [0.5; 0.5; 0.5]; % m/s
+        cov_ddxyz = [0.5; 0.5; 0.5]; %m/s^2
         cov_theta = [0.5; 0.5; 0.5]; % rad/s
-        cov_dtheta = [0.5; 0.5; 0.5]; % rad/s^2
     end
     
     methods
@@ -26,8 +26,8 @@ classdef RigidBody < handle
             obj.name = name;
             obj.xyz = xyz_i;
             obj.dxyz = [0;0;0];
+            obj.ddxyz = [0;0;0];
             obj.theta = theta_i;
-            obj.dtheta = [0;0;0];
         end
         
         % get vectorized state
@@ -35,22 +35,22 @@ classdef RigidBody < handle
             x = [
                 obj.xyz;
                 obj.dxyz;
+                obj.ddxyz;
                 obj.theta;
-                obj.dtheta;
                 ];
         end
         
         % get process covariance
         function P = getProcessCovariance(obj)
-            P = diag([obj.cov_xyz; obj.cov_dxyz; obj.cov_theta; obj.cov_dtheta]);
+            P = diag([obj.cov_xyz; obj.cov_dxyz; obj.cov_ddxyz; obj.cov_theta;]);
         end
         
         % set state variables
         function setStateVector(obj, x)
             obj.xyz = x(1:3);
             obj.dxyz = x(4:6);
-            obj.theta = x(7:9);
-            obj.dtheta = x(10:12);
+            obj.ddxyz = x(7:9);
+            obj.theta = x(10:12);
         end
         
         % get name

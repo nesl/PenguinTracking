@@ -18,17 +18,17 @@ classdef Measurement < handle
         baro = 0;
         temp = 0;
         % gps data, if used
-        latitude = 0;
-        longitude = 0;
+        x_utm = 0;
+        y_utm = 0;
         altitude = 0;
         % covariance terms
-        cov_acc = [0.01; 0.01; 0.01]; % units?
-        cov_mag = [0.01; 0.01; 0.01]; % units?
+        cov_acc = [0.1; 0.1; 0.1]; % units?
+        cov_mag = [0.1; 0.1; 0.1]; % units?
         cov_baro = 1; % units?
         cov_temp = 0.5; % deg. C
-        cov_latitude = 0;
-        cov_longitude = 0;
-        cov_altitude = 0;
+        cov_latitude = 1;
+        cov_longitude = 1;
+        cov_altitude = 1;
     end
     
     methods
@@ -49,10 +49,10 @@ classdef Measurement < handle
         end
         
         % set GPS data
-        function setGPSData(obj, latitude, longitude, altitude)
-            obj.latitude = latitude;
-            obj.longitude = longitude;
-            obj.altitude = altitude;
+        function setGPSData(obj, x, y, alt)
+            obj.x_utm = x;
+            obj.y_utm = y;
+            obj.altitude = alt;
         end
 
         % get the vectorized measurements
@@ -62,7 +62,7 @@ classdef Measurement < handle
                 z = [obj.acc_xyz; obj.mag_xyz; obj.baro; obj.temp];
             end
             if obj.type == obj.MSGTYPE_GPS
-                z = [obj.latitude; obj.longitude; obj.altitude];
+                z = [obj.x_utm; obj.y_utm; obj.altitude];
             end
         end
         

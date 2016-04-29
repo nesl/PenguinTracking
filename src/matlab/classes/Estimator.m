@@ -22,6 +22,7 @@ classdef Estimator < handle
         MAXMEASUREMENTS = 1e6;
         MSGTYPE_INERTIAL = 0;
         MSGTYPE_GPS = 1;
+        GRAVITY = 9.81;
     end
     
     properties
@@ -105,26 +106,70 @@ classdef Estimator < handle
         
         % initial process variance
         function P = getInitialVar(obj)
-            covi_xyz = [10; 10; 10];
+            covi_xyz = 1e3*[20; 20; 20];
             covi_dxyz = [1; 1; 1];
+            covi_ddxyz = [1; 1; 1];
             covi_theta = [1; 1; 1];
-            covi_dtheta = [0.1; 0.1; 0.1];
-            P = diag([covi_xyz; covi_dxyz; covi_theta; covi_dtheta]);
+            P = diag([covi_xyz; covi_dxyz; covi_ddxyz; covi_theta]);
         end
         
         % state process function
         function snew = processFcn(obj, s, dt)
-            snew = 0;
+            % to start, predicted new state is old state
+            snew = s;
+            
+            % xyz, dxyz, theta, dtheta
+            xyz = s(1:3);
+            dxyz = s(4:6);
+            ddxyz = s(7:9);
+            theta = s(10:12);
+            
+            % simple integration of velocities
+            snew(1:3) = xyz + dt*dxyz;
+            snew(4:6) = dxyz + dt*ddxyz;
         end
         
         % state measurement function
         function y = measurementFcn(obj, s, meas)
-           y = 0;
+            if meas.getType() == obj.MSGTYPE_INERTIAL
+                theta = s(4:6);
+                % rotation matrices from world to body frame
+                Rx = [1 0 0; 0 cos(theta(1)) -sin(theta(1)); 0 sin(theta(1)) cos(theta(1))];
+                Ry = [cos(theta(2)) 0 sin(theta(2)); 0 1 0; -sin(theta(2)) 0 cos(theta(2))];
+                Rz = [cos(theta(3)) -sin(theta(3)) 0; sin(theta(3)) cos(theta(3)) 0; 0 0 1];
+                R = Rz*Ry*Rx;
+                % acc_xyz, mag_xyz, temp, baro (body frame!)
+                state_acc = s(1:3);
+                state_mag = s(4:6);
+                y = [
+                    % acc_xyz
+                    R*(state_acc./obj.GRAVITY);
+                    % mag_xyz
+                    Rx*[1;1;1];
+                    % temp
+                    0;
+                    % baro
+                    0;
+                    ];
+                
+            elseif meas.getType() == obj.MSGTYPE_GPS
+                % x_utm, y_utm, alt
+                y = [
+                    % x
+                    s(1);
+                    % y
+                    s(2);
+                    % alt
+                    s(3);
+                    ];
+            else
+                error('Unsupported message type');
+            end
         end
         
         % request the next (filtered) measurement
         function m = getNextMeasurement(obj)
-            m = [];
+            m = obj.dataparser.getNextMeasurement();
         end
         
         function killLastMeasurement(obj)
