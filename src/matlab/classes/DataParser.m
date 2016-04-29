@@ -28,6 +28,7 @@ classdef DataParser < handle
                 % seconds since 1-Jan-0000.
                 ds = dn*86400;
                 obj.data_inertial(i,1) = ds;
+                disp(100*i/length(rawdata{1}));
             end
             % append accel
             obj.data_inertial(:,2:4) = [rawdata{1} rawdata{2} rawdata{3}];
